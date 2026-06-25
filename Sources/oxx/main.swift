@@ -29,6 +29,8 @@ struct OxxCLI {
             try config(arguments)
         case "install":
             try install(arguments)
+        case "upgrade":
+            try install(arguments, forceReplace: true)
         case "uninstall":
             try LaunchAgentManager.uninstall()
             print("Uninstalled \(OxxPaths.label).")
@@ -102,7 +104,7 @@ struct OxxCLI {
         }
     }
 
-    static func install(_ arguments: [String]) throws {
+    static func install(_ arguments: [String], forceReplace: Bool = false) throws {
         let serviceURL: URL
         if let pathIndex = arguments.firstIndex(of: "--service-path"), arguments.indices.contains(pathIndex + 1) {
             serviceURL = URL(fileURLWithPath: arguments[pathIndex + 1])
@@ -110,11 +112,21 @@ struct OxxCLI {
             serviceURL = try defaultServiceURL()
         }
 
-        let installedServiceURL = try LaunchAgentManager.install(serviceURL: serviceURL)
+        let requestedForceReplace = forceReplace || arguments.contains("--replace-service")
+        let appExisted = FileManager.default.fileExists(atPath: OxxPaths.installedServiceURL.path)
+        let installedServiceURL = try LaunchAgentManager.install(serviceURL: serviceURL, forceReplace: requestedForceReplace)
+        if appExisted && !requestedForceReplace {
+            print("Reused existing service app to preserve Accessibility permission.")
+        } else {
+            print("Installed service app.")
+        }
         print("Installed \(OxxPaths.label).")
         print("LaunchAgent: \(OxxPaths.launchAgentURL.path)")
         print("Config: \(OxxPaths.configURL.path)")
         print("Service binary: \(installedServiceURL.path)")
+        if requestedForceReplace {
+            print("The service app was replaced. macOS may require toggling Accessibility permission for ~/Applications/oxx-service.app.")
+        }
         print("Grant Accessibility permission to the service binary if middle-click cycling does not work.")
         print(AccessibilityPermissions.guidance)
     }
@@ -169,7 +181,8 @@ struct OxxCLI {
             Commands:
               list-displays              List active displays in cycle order
               jump <display-index>       Move cursor to a display center
-              install [--service-path]   Install and start the user LaunchAgent
+              install [--service-path]   Install/start without replacing an existing service app
+              upgrade [--service-path]   Replace the service app, then install/start
               uninstall                  Stop and remove the user LaunchAgent
               start|stop|restart|status  Manage the LaunchAgent
               config init|path|show|validate

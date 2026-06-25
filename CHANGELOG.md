@@ -4,6 +4,7 @@ All meaningful repository changes should be documented in this file.
 
 ## 2026-06-25
 
+- Made `install` preserve the existing service app by default so normal reinstalls do not invalidate macOS Accessibility permission; added explicit `upgrade` replacement behavior.
 - Added a configurable animated cursor visual cue after successful display switching.
 - Created the initial SwiftPM implementation of `oxx`, a macOS user-level cursor display cycle service.
 - Added the `oxx` CLI for display listing, cursor jumping, config validation, LaunchAgent install/start/stop/status, and service permission diagnostics.

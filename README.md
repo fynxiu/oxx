@@ -26,6 +26,7 @@ swift run oxx config validate
 swift run oxx permissions --prompt
 swift run oxx service-permissions
 swift run oxx install --service-path .build/release/oxx-service
+swift run oxx upgrade --service-path .build/release/oxx-service
 swift run oxx status
 swift run oxx stop
 swift run oxx start
@@ -85,3 +86,8 @@ The service binary is copied to a stable path during install:
 ```text
 ~/Applications/oxx-service.app/Contents/MacOS/oxx-service
 ```
+
+`install` preserves an existing service app so Accessibility permission is not
+invalidated by normal restarts/reinstalls. Use `upgrade` only when replacing the
+service binary; after an upgrade, macOS may require toggling Accessibility for
+`~/Applications/oxx-service.app`.

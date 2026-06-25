@@ -43,33 +43,15 @@ public enum LaunchAgentManager {
     }
 
     @discardableResult
-    public static func install(serviceURL: URL) throws -> URL {
+    public static func install(serviceURL: URL, forceReplace: Bool = false) throws -> URL {
         guard FileManager.default.isExecutableFile(atPath: serviceURL.path) else {
             throw LaunchAgentError.serviceBinaryMissing(serviceURL)
         }
 
-        if FileManager.default.fileExists(atPath: OxxPaths.serviceAppURL.path) {
-            try FileManager.default.removeItem(at: OxxPaths.serviceAppURL)
+        let appExists = FileManager.default.fileExists(atPath: OxxPaths.installedServiceURL.path)
+        if ServiceInstallPolicy.shouldReplaceExistingApp(appExists: appExists, forceReplace: forceReplace) {
+            try installServiceApp(from: serviceURL)
         }
-        try FileManager.default.createDirectory(
-            at: OxxPaths.serviceAppMacOSURL,
-            withIntermediateDirectories: true
-        )
-        try FileManager.default.createDirectory(
-            at: OxxPaths.serviceAppContentsURL.appendingPathComponent("Resources", isDirectory: true),
-            withIntermediateDirectories: true
-        )
-        try FileManager.default.copyItem(at: serviceURL, to: OxxPaths.installedServiceURL)
-        try FileManager.default.setAttributes(
-            [.posixPermissions: 0o755],
-            ofItemAtPath: OxxPaths.installedServiceURL.path
-        )
-        try infoPlist().write(
-            to: OxxPaths.serviceAppContentsURL.appendingPathComponent("Info.plist"),
-            atomically: true,
-            encoding: .utf8
-        )
-        try? runCodesign(["--force", "--deep", "--sign", "-", OxxPaths.serviceAppURL.path])
 
         try FileManager.default.createDirectory(
             at: OxxPaths.launchAgentURL.deletingLastPathComponent(),
@@ -92,6 +74,31 @@ public enum LaunchAgentManager {
         try runLaunchctl(["enable", "\(userDomain())/\(OxxPaths.label)"])
         try runLaunchctl(["kickstart", "-k", "\(userDomain())/\(OxxPaths.label)"])
         return OxxPaths.installedServiceURL
+    }
+
+    private static func installServiceApp(from serviceURL: URL) throws {
+        if FileManager.default.fileExists(atPath: OxxPaths.serviceAppURL.path) {
+            try FileManager.default.removeItem(at: OxxPaths.serviceAppURL)
+        }
+        try FileManager.default.createDirectory(
+            at: OxxPaths.serviceAppMacOSURL,
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: OxxPaths.serviceAppContentsURL.appendingPathComponent("Resources", isDirectory: true),
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.copyItem(at: serviceURL, to: OxxPaths.installedServiceURL)
+        try FileManager.default.setAttributes(
+            [.posixPermissions: 0o755],
+            ofItemAtPath: OxxPaths.installedServiceURL.path
+        )
+        try infoPlist().write(
+            to: OxxPaths.serviceAppContentsURL.appendingPathComponent("Info.plist"),
+            atomically: true,
+            encoding: .utf8
+        )
+        try? runCodesign(["--force", "--deep", "--sign", "-", OxxPaths.serviceAppURL.path])
     }
 
     private static func infoPlist() -> String {
@@ -182,5 +189,11 @@ public enum LaunchAgentManager {
         guard process.terminationStatus == 0 else {
             throw LaunchAgentError.commandFailed("codesign \(arguments.joined(separator: " "))", process.terminationStatus)
         }
+    }
+}
+
+public enum ServiceInstallPolicy {
+    public static func shouldReplaceExistingApp(appExists: Bool, forceReplace: Bool) -> Bool {
+        !appExists || forceReplace
     }
 }
