@@ -105,7 +105,7 @@ final class MiddleClickCycleService {
             let target = try DisplayRuntime.cycleToNextDisplay()
             didLogSingleDisplay = false
             DispatchQueue.main.async { [cueOverlay] in
-                cueOverlay.show(at: target.center, config: config.visualCue)
+                cueOverlay.show(at: target.center, display: target, config: config.visualCue)
             }
             print("Moved cursor to display id=\(target.id) center=(x:\(target.center.x), y:\(target.center.y))")
         } catch DisplayRuntimeError.noNextDisplay {

@@ -6,14 +6,19 @@ import OxxCore
 final class CursorCueOverlay {
     private var windows: [NSWindow] = []
 
-    func show(at point: CGPoint, config: VisualCueConfig) {
+    func show(at point: CGPoint, display: DisplayInfo, config: VisualCueConfig) {
         guard config.enabled else {
             return
         }
 
         let diameter = CGFloat(max(config.diameter, 24))
         let duration = TimeInterval(max(config.durationMilliseconds, 100)) / 1000
-        let origin = CGPoint(x: point.x - diameter / 2, y: point.y - diameter / 2)
+        let appKitPoint = CoordinateConversion.appKitPoint(
+            forCoreGraphicsPoint: point,
+            display: display,
+            screens: NSScreen.screens.map { AppKitScreenInfo(frame: $0.frame) }
+        )
+        let origin = CGPoint(x: appKitPoint.x - diameter / 2, y: appKitPoint.y - diameter / 2)
         let frame = CGRect(origin: origin, size: CGSize(width: diameter, height: diameter))
 
         let window = NSWindow(
