@@ -29,29 +29,51 @@ public enum OxxOrdering: String, Codable, Equatable, Sendable {
     case leftToRightTopToBottom
 }
 
+public struct VisualCueConfig: Codable, Equatable, Sendable {
+    public var enabled: Bool
+    public var durationMilliseconds: Int
+    public var diameter: Int
+
+    public static let `default` = VisualCueConfig(
+        enabled: true,
+        durationMilliseconds: 450,
+        diameter: 96
+    )
+
+    public init(enabled: Bool, durationMilliseconds: Int, diameter: Int) {
+        self.enabled = enabled
+        self.durationMilliseconds = durationMilliseconds
+        self.diameter = diameter
+    }
+}
+
 public struct OxxConfig: Codable, Equatable, Sendable {
     public var trigger: OxxTrigger
     public var action: OxxAction
     public var ordering: OxxOrdering
     public var consumeTrigger: Bool
+    public var visualCue: VisualCueConfig
 
     public static let `default` = OxxConfig(
         trigger: .middleClick,
         action: .cycleNextDisplay,
         ordering: .leftToRightTopToBottom,
-        consumeTrigger: false
+        consumeTrigger: false,
+        visualCue: .default
     )
 
     public init(
         trigger: OxxTrigger,
         action: OxxAction,
         ordering: OxxOrdering,
-        consumeTrigger: Bool
+        consumeTrigger: Bool,
+        visualCue: VisualCueConfig
     ) {
         self.trigger = trigger
         self.action = action
         self.ordering = ordering
         self.consumeTrigger = consumeTrigger
+        self.visualCue = visualCue
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -59,6 +81,7 @@ public struct OxxConfig: Codable, Equatable, Sendable {
         case action
         case ordering
         case consumeTrigger
+        case visualCue
     }
 
     public init(from decoder: Decoder) throws {
@@ -83,6 +106,7 @@ public struct OxxConfig: Codable, Equatable, Sendable {
         self.action = action
         self.ordering = ordering
         self.consumeTrigger = try container.decodeIfPresent(Bool.self, forKey: .consumeTrigger) ?? false
+        self.visualCue = try container.decodeIfPresent(VisualCueConfig.self, forKey: .visualCue) ?? .default
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -91,6 +115,7 @@ public struct OxxConfig: Codable, Equatable, Sendable {
         try container.encode(action.rawValue, forKey: .action)
         try container.encode(ordering.rawValue, forKey: .ordering)
         try container.encode(consumeTrigger, forKey: .consumeTrigger)
+        try container.encode(visualCue, forKey: .visualCue)
     }
 
     public static func decode(_ data: Data) throws -> OxxConfig {

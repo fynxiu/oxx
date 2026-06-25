@@ -51,7 +51,12 @@ Default config:
   "action" : "cycleNextDisplay",
   "consumeTrigger" : false,
   "ordering" : "leftToRightTopToBottom",
-  "trigger" : "middleClick"
+  "trigger" : "middleClick",
+  "visualCue" : {
+    "diameter" : 96,
+    "durationMilliseconds" : 450,
+    "enabled" : true
+  }
 }
 ```
 
@@ -71,6 +76,10 @@ middle-click event.
 The background service does not repeatedly trigger the macOS permission prompt.
 Use `swift run oxx permissions --prompt` when you want to open the prompt, then
 restart the service with `swift run oxx restart`.
+
+After a successful display switch, the service shows a short translucent ring at
+the new cursor position. Set `visualCue.enabled` to `false` in the config file to
+disable it.
 The service binary is copied to a stable path during install:
 
 ```text

@@ -112,7 +112,7 @@ public enum LaunchAgentManager {
             <string>0.1.0</string>
             <key>CFBundleVersion</key>
             <string>1</string>
-            <key>LSBackgroundOnly</key>
+            <key>LSUIElement</key>
             <true/>
         </dict>
         </plist>

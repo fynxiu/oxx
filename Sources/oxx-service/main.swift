@@ -1,3 +1,4 @@
+import AppKit
 import CoreGraphics
 import Foundation
 import OxxCore
@@ -28,6 +29,7 @@ final class MiddleClickCycleService {
     private var eventTap: CFMachPort?
     private var didLogSingleDisplay = false
     private var didLogMissingAccessibility = false
+    private let cueOverlay = CursorCueOverlay()
 
     func run() {
         print("oxx-service starting")
@@ -82,7 +84,6 @@ final class MiddleClickCycleService {
         }
 
         let buttonNumber = event.getIntegerValueField(.mouseEventButtonNumber)
-        print("otherMouseDown buttonNumber=\(buttonNumber)")
         guard buttonNumber == 2 else {
             return Unmanaged.passUnretained(event)
         }
@@ -100,8 +101,12 @@ final class MiddleClickCycleService {
 
     private func cycleOnce() {
         do {
+            let config = (try? ConfigStore.loadOrCreateDefault()) ?? .default
             let target = try DisplayRuntime.cycleToNextDisplay()
             didLogSingleDisplay = false
+            DispatchQueue.main.async { [cueOverlay] in
+                cueOverlay.show(at: target.center, config: config.visualCue)
+            }
             print("Moved cursor to display id=\(target.id) center=(x:\(target.center.x), y:\(target.center.y))")
         } catch DisplayRuntimeError.noNextDisplay {
             if !didLogSingleDisplay {
