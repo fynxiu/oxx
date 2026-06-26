@@ -30,6 +30,7 @@ final class MiddleClickCycleService {
     private var didLogSingleDisplay = false
     private var didLogMissingAccessibility = false
     private let cueOverlay = CursorCueOverlay()
+    private let focusController = WindowFocusController()
 
     func run() {
         print("oxx-service starting")
@@ -104,6 +105,7 @@ final class MiddleClickCycleService {
             let config = (try? ConfigStore.loadOrCreateDefault()) ?? .default
             let target = try DisplayRuntime.cycleToNextDisplay()
             didLogSingleDisplay = false
+            focusController.focusWindow(at: target.center, mode: config.focusMode)
             DispatchQueue.main.async { [cueOverlay] in
                 cueOverlay.show(at: target.center, display: target, config: config.visualCue)
             }

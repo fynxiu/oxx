@@ -51,6 +51,7 @@ Default config:
 {
   "action" : "cycleNextDisplay",
   "consumeTrigger" : false,
+  "focusMode" : "activateApplication",
   "ordering" : "leftToRightTopToBottom",
   "trigger" : "middleClick",
   "visualCue" : {
@@ -81,6 +82,10 @@ restart the service with `swift run oxx restart`.
 After a successful display switch, the service shows a short translucent ring at
 the new cursor position. Set `visualCue.enabled` to `false` in the config file to
 disable it.
+
+By default, the service activates the app owning the top normal window under the
+new cursor position after switching displays. Set `focusMode` to `none` to leave
+keyboard focus unchanged.
 The service binary is copied to a stable path during install:
 
 ```text

@@ -4,6 +4,7 @@ All meaningful repository changes should be documented in this file.
 
 ## 2026-06-25
 
+- Added `focusMode` support that activates the app owning the top normal window under the new cursor position after display switching.
 - Fixed cursor cue placement by converting CoreGraphics cursor/display coordinates into AppKit screen coordinates before showing the overlay.
 - Made `install` preserve the existing service app by default so normal reinstalls do not invalidate macOS Accessibility permission; added explicit `upgrade` replacement behavior.
 - Added a configurable animated cursor visual cue after successful display switching.
