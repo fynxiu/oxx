@@ -86,6 +86,10 @@ disable it.
 By default, the service activates the app owning the top normal window under the
 new cursor position after switching displays. Set `focusMode` to `none` to leave
 keyboard focus unchanged.
+
+The service listens for monitor attach, detach, and layout-change events. When
+the display configuration changes, it clears transient visual cue windows and
+refreshes screen matching before the next switch.
 The service binary is copied to a stable path during install:
 
 ```text

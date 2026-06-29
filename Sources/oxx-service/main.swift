@@ -25,12 +25,15 @@ struct OxxServiceMain {
 
 OxxServiceMain.main()
 
-final class MiddleClickCycleService {
+final class MiddleClickCycleService: @unchecked Sendable {
     private var eventTap: CFMachPort?
     private var didLogSingleDisplay = false
     private var didLogMissingAccessibility = false
     private let cueOverlay = CursorCueOverlay()
     private let focusController = WindowFocusController()
+    private lazy var displayChangeObserver = DisplayChangeObserver { [weak self] in
+        self?.resetAfterDisplayChange()
+    }
 
     func run() {
         print("oxx-service starting")
@@ -45,8 +48,17 @@ final class MiddleClickCycleService {
             Thread.sleep(forTimeInterval: 10)
         }
 
+        displayChangeObserver.start()
         print("oxx-service listening for middle-click display cycling")
         RunLoop.main.run()
+    }
+
+    private func resetAfterDisplayChange() {
+        didLogSingleDisplay = false
+        DispatchQueue.main.async { [cueOverlay] in
+            cueOverlay.reset()
+        }
+        print("Display configuration reset complete")
     }
 
     private func installEventTap() -> Bool {

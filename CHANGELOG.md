@@ -2,6 +2,10 @@
 
 All meaningful repository changes should be documented in this file.
 
+## 2026-06-29
+
+- Added display reconfiguration handling that resets transient visual cue state after monitor attach, detach, or layout changes, and made cue placement prefer matching `NSScreen` by display ID.
+
 ## 2026-06-25
 
 - Added `focusMode` support that activates the app owning the top normal window under the new cursor position after display switching.

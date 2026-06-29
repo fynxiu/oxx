@@ -6,6 +6,13 @@ import OxxCore
 final class CursorCueOverlay {
     private var windows: [NSWindow] = []
 
+    func reset() {
+        for window in windows {
+            window.orderOut(nil)
+        }
+        windows.removeAll()
+    }
+
     func show(at point: CGPoint, display: DisplayInfo, config: VisualCueConfig) {
         guard config.enabled else {
             return
@@ -16,7 +23,9 @@ final class CursorCueOverlay {
         let appKitPoint = CoordinateConversion.appKitPoint(
             forCoreGraphicsPoint: point,
             display: display,
-            screens: NSScreen.screens.map { AppKitScreenInfo(frame: $0.frame) }
+            screens: NSScreen.screens.map {
+                AppKitScreenInfo(displayID: $0.displayID, frame: $0.frame)
+            }
         )
         let origin = CGPoint(x: appKitPoint.x - diameter / 2, y: appKitPoint.y - diameter / 2)
         let frame = CGRect(origin: origin, size: CGSize(width: diameter, height: diameter))
@@ -47,6 +56,15 @@ final class CursorCueOverlay {
             window.orderOut(nil)
             self.windows.removeAll { $0 === window }
         }
+    }
+}
+
+private extension NSScreen {
+    var displayID: CGDirectDisplayID? {
+        guard let number = deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else {
+            return nil
+        }
+        return CGDirectDisplayID(number.uint32Value)
     }
 }
 
